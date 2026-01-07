@@ -30,7 +30,8 @@ export function ImagePickerModal({ visible, onClose, onImageSelected }: ImagePic
         setSelectedImage(result.assets[0].uri);
       }
     } catch (error) {
-      console.error("Gallery error:", error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error("Gallery error:", errorMessage);
     } finally {
       setLoading(false);
     }
@@ -49,7 +50,8 @@ export function ImagePickerModal({ visible, onClose, onImageSelected }: ImagePic
         setSelectedImage(result.assets[0].uri);
       }
     } catch (error) {
-      console.error("Camera error:", error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error("Camera error:", errorMessage);
     } finally {
       setLoading(false);
     }

@@ -54,7 +54,8 @@ export function GenerationProvider({ children }: { children: React.ReactNode }) 
       dispatch({ type: "SET_GENERATING", payload: true });
       dispatch({ type: "SET_CURRENT_TASK", payload: "text2img" });
 
-      const response = await fetch("http://127.0.0.1:3000/api/generation/text2img", {
+      const apiUrl = process.env.EXPO_PUBLIC_API_URL || "http://127.0.0.1:3000";
+      const response = await fetch(`${apiUrl}/api/generation/text2img`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(params),
@@ -66,7 +67,8 @@ export function GenerationProvider({ children }: { children: React.ReactNode }) 
       dispatch({ type: "ADD_RESULT", payload: result });
       return result;
     } catch (error) {
-      console.error("Text2Img generation error:", error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error("Text2Img generation error:", errorMessage);
       return null;
     } finally {
       dispatch({ type: "SET_GENERATING", payload: false });
@@ -79,7 +81,8 @@ export function GenerationProvider({ children }: { children: React.ReactNode }) 
       dispatch({ type: "SET_GENERATING", payload: true });
       dispatch({ type: "SET_CURRENT_TASK", payload: "img2img" });
 
-      const response = await fetch("http://127.0.0.1:3000/api/generation/img2img", {
+      const apiUrl = process.env.EXPO_PUBLIC_API_URL || "http://127.0.0.1:3000";
+      const response = await fetch(`${apiUrl}/api/generation/img2img`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(params),
@@ -91,7 +94,8 @@ export function GenerationProvider({ children }: { children: React.ReactNode }) 
       dispatch({ type: "ADD_RESULT", payload: result });
       return result;
     } catch (error) {
-      console.error("Img2Img generation error:", error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error("Img2Img generation error:", errorMessage);
       return null;
     } finally {
       dispatch({ type: "SET_GENERATING", payload: false });
@@ -104,7 +108,8 @@ export function GenerationProvider({ children }: { children: React.ReactNode }) 
       dispatch({ type: "SET_GENERATING", payload: true });
       dispatch({ type: "SET_CURRENT_TASK", payload: "img2video" });
 
-      const response = await fetch("http://127.0.0.1:3000/api/generation/img2video", {
+      const apiUrl = process.env.EXPO_PUBLIC_API_URL || "http://127.0.0.1:3000";
+      const response = await fetch(`${apiUrl}/api/generation/img2video`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(params),
@@ -116,7 +121,8 @@ export function GenerationProvider({ children }: { children: React.ReactNode }) 
       dispatch({ type: "ADD_RESULT", payload: result });
       return result;
     } catch (error) {
-      console.error("Img2Video generation error:", error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error("Img2Video generation error:", errorMessage);
       return null;
     } finally {
       dispatch({ type: "SET_GENERATING", payload: false });

@@ -140,7 +140,8 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
 
   const generateImage = async (prompt: string, model: string): Promise<GenerationResult | null> => {
     try {
-      const response = await fetch("http://127.0.0.1:3000/api/generation/text2img", {
+      const apiUrl = process.env.EXPO_PUBLIC_API_URL || "http://127.0.0.1:3000";
+      const response = await fetch(`${apiUrl}/api/generation/text2img`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -152,10 +153,13 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         }),
       });
 
-      if (!response.ok) throw new Error("Generation failed");
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Generation failed: ${response.status} - ${errorText}`);
+      }
       return await response.json();
     } catch (error) {
-      console.error("Image generation error:", error);
+      console.error("Image generation error:", error instanceof Error ? error.message : String(error));
       return null;
     }
   };
@@ -224,13 +228,17 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
 
     try {
       // Call AI backend
-      const response = await fetch("http://127.0.0.1:3000/api/chat", {
+      const apiUrl = process.env.EXPO_PUBLIC_API_URL || "http://127.0.0.1:3000";
+      const response = await fetch(`${apiUrl}/api/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: content }),
       });
 
-      if (!response.ok) throw new Error(`API error: ${response.status}`);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`API error: ${response.status} - ${errorText}`);
+      }
       const data = await response.json();
 
       // Update typing message with actual response
@@ -252,13 +260,21 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         dispatch({ type: "SET_CHATS", payload: updatedChats });
       }
     } catch (error) {
-      console.error("Failed to send message:", error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error("Failed to send message:", errorMessage);
+      
+      // Provide helpful fallback response
+      let fallbackContent = "Sorry, I encountered an error. Please try again.";
+      if (errorMessage.includes("Network")) {
+        fallbackContent = "Network connection issue. Please check your internet connection and try again.";
+      }
+      
       dispatch({
         type: "UPDATE_MESSAGE",
         payload: {
           chatId: state.currentChatId,
           messageId: typingMessage.id,
-          content: "Sorry, I encountered an error. Please try again.",
+          content: fallbackContent,
         },
       });
     }
