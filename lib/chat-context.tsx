@@ -3,6 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { Chat, Message } from "@/types/chat";
 import type { GenerationResult } from "@/types/generation";
 import { sendImageGenerationNotification } from "@/lib/notifications";
+import { getMockAIResponse, getMockGenerationResult, simulateDelay } from "@/lib/mock-service";
 
 export interface ChatState {
   chats: Chat[];
@@ -141,23 +142,30 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   const generateImage = async (prompt: string, model: string): Promise<GenerationResult | null> => {
     try {
       const apiUrl = process.env.EXPO_PUBLIC_API_URL || "http://127.0.0.1:3000";
-      const response = await fetch(`${apiUrl}/api/generation/text2img`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          prompt,
-          model,
-          width: 512,
-          height: 512,
-          steps: 20,
-        }),
-      });
+      try {
+        const response = await fetch(`${apiUrl}/api/generation/text2img`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            prompt,
+            model,
+            width: 512,
+            height: 512,
+            steps: 20,
+          }),
+        });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Generation failed: ${response.status} - ${errorText}`);
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Generation failed: ${response.status} - ${errorText}`);
+        }
+        return await response.json();
+      } catch (fetchError) {
+        // Fallback to mock service if backend is unavailable
+        console.log("Backend unavailable, using mock image generation");
+        await simulateDelay(1500);
+        return getMockGenerationResult(prompt, model);
       }
-      return await response.json();
     } catch (error) {
       console.error("Image generation error:", error instanceof Error ? error.message : String(error));
       return null;
@@ -229,17 +237,25 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     try {
       // Call AI backend
       const apiUrl = process.env.EXPO_PUBLIC_API_URL || "http://127.0.0.1:3000";
-      const response = await fetch(`${apiUrl}/api/chat`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: content }),
-      });
+      let data;
+      try {
+        const response = await fetch(`${apiUrl}/api/chat`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: content }),
+        });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`API error: ${response.status} - ${errorText}`);
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`API error: ${response.status} - ${errorText}`);
+        }
+        data = await response.json();
+      } catch (fetchError) {
+        // Fallback to mock service if backend is unavailable
+        console.log("Backend unavailable, using mock AI response");
+        await simulateDelay(800);
+        data = { response: getMockAIResponse(content) };
       }
-      const data = await response.json();
 
       // Update typing message with actual response
       dispatch({

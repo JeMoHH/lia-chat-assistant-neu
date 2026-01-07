@@ -1,4 +1,4 @@
-import { useRef, useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { ScrollView, Text, View, TouchableOpacity, Platform } from "react-native";
 import { ScreenContainer } from "@/components/screen-container";
 import { MessageBubble } from "@/components/message-bubble";
