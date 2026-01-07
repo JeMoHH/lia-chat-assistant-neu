@@ -144,3 +144,17 @@
 - [x] Gallery service with tagging
 - [x] Admin authentication with session management
 - [x] App configuration management
+
+
+## Phase 4: Advanced Features
+
+- [x] Backend API integration for live responses
+- [x] Voice input/output (speech-to-text, text-to-speech)
+- [x] User authentication and accounts
+- [x] Multiple chat windows/conversations
+- [x] Window-specific memory management
+- [x] Window switching UI with conversation browser
+- [x] Conversation manager with full CRUD
+- [x] Memory manager for context persistence
+- [x] API client with auth interceptors
+- [x] Auth context with session management
