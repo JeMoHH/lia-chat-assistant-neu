@@ -4,12 +4,14 @@ import { ScreenContainer } from "@/components/screen-container";
 import { CodeEditor, type CodeLanguage } from "@/components/code-editor";
 import { TerminalOutput } from "@/components/terminal-output";
 import { CodeAnalysis } from "@/components/code-analysis";
+import { SnippetsBrowser } from "@/components/snippets-browser";
 import { useColors } from "@/hooks/use-colors";
 import { analyzeCode, type AnalysisResult } from "@/lib/code-analyzer";
 import { executeCode, type ExecutionResult } from "@/lib/terminal-service";
+import { type CodeSnippet } from "@/lib/code-snippets";
 import * as Haptics from "expo-haptics";
 
-type TabType = "editor" | "output" | "analysis";
+type TabType = "editor" | "output" | "analysis" | "snippets";
 
 export default function DeveloperScreen() {
   const colors = useColors();
@@ -19,6 +21,15 @@ export default function DeveloperScreen() {
   const [executionResult, setExecutionResult] = useState<ExecutionResult | null>(null);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [isExecuting, setIsExecuting] = useState(false);
+
+  const handleSelectSnippet = useCallback(
+    (snippet: CodeSnippet) => {
+      setCode(snippet.code);
+      setLanguage(snippet.language as CodeLanguage);
+      setActiveTab("editor");
+    },
+    []
+  );
 
   const handleExecuteCode = useCallback(
     async (codeToExecute: string, lang: CodeLanguage) => {
@@ -89,7 +100,7 @@ export default function DeveloperScreen() {
         className="flex-row border-b"
         style={{ borderBottomColor: colors.border }}
       >
-        {(["editor", "output", "analysis"] as TabType[]).map((tab) => (
+        {(["editor", "output", "analysis", "snippets"] as TabType[]).map((tab) => (
           <TouchableOpacity
             key={tab}
             className="flex-1 py-3 items-center border-b-2"
@@ -107,6 +118,7 @@ export default function DeveloperScreen() {
               {tab === "editor" && "📝 Editor"}
               {tab === "output" && "📤 Output"}
               {tab === "analysis" && "🔍 Analysis"}
+              {tab === "snippets" && "📚 Snippets"}
             </Text>
           </TouchableOpacity>
         ))}
@@ -134,6 +146,10 @@ export default function DeveloperScreen() {
 
         {activeTab === "analysis" && (
           <CodeAnalysis result={analysisResult || undefined} />
+        )}
+
+        {activeTab === "snippets" && (
+          <SnippetsBrowser onSelectSnippet={handleSelectSnippet} />
         )}
       </View>
 
