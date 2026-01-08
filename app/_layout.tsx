@@ -27,6 +27,7 @@ import { AppErrorBoundary } from "@/components/app-error-boundary";
 import { AuthProvider } from "@/lib/auth-context";
 import { initializeAndroidCompat } from "@/lib/android-init";
 import { memoryOptimizer } from "@/lib/memory-optimizer";
+import { apkCrashFixer } from "@/lib/apk-crash-fix";
 
 const DEFAULT_WEB_INSETS: EdgeInsets = { top: 0, right: 0, bottom: 0, left: 0 };
 const DEFAULT_WEB_FRAME: Rect = { x: 0, y: 0, width: 0, height: 0 };
@@ -44,6 +45,10 @@ export default function RootLayout() {
 
   // Initialize Manus runtime for cookie injection from parent container
   useEffect(() => {
+    // Initialize crash fixer first
+    apkCrashFixer.initialize();
+
+    // Then initialize other services
     initManusRuntime();
     initializeNotifications();
     initializeOfflineService();

@@ -82,7 +82,31 @@ export default function TabLayout() {
         name="admin"
         options={{
           title: "Admin",
-          tabBarIcon: ({ color }) => <Text style={{ fontSize: 24, color }}>🔐</Text>,
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="chevron.left.forwardslash.chevron.right" color={color} />,
+        }}
+      />
+
+      <Tabs.Screen
+        name="personality"
+        options={{
+          title: "Personality",
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+        }}
+      />
+
+      <Tabs.Screen
+        name="knowledge"
+        options={{
+          title: "Knowledge",
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="book.fill" color={color} />,
+        }}
+      />
+
+      <Tabs.Screen
+        name="upgrades"
+        options={{
+          title: "Upgrades",
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="arrow.up.circle.fill" color={color} />,
         }}
       />
     </Tabs>

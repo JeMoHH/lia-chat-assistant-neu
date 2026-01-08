@@ -4,6 +4,7 @@ import type { Chat, Message } from "@/types/chat";
 import type { GenerationResult } from "@/types/generation";
 import { sendImageGenerationNotification } from "@/lib/notifications";
 import { getMockAIResponse, getMockGenerationResult, simulateDelay } from "@/lib/mock-service";
+import { realAPIClient } from "@/lib/real-api-client";
 
 export interface ChatState {
   chats: Chat[];
@@ -141,28 +142,20 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
 
   const generateImage = async (prompt: string, model: string): Promise<GenerationResult | null> => {
     try {
-      const apiUrl = process.env.EXPO_PUBLIC_API_URL || "http://127.0.0.1:3000";
+      // Try real API first
       try {
-        const response = await fetch(`${apiUrl}/api/generation/text2img`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            prompt,
-            model,
-            width: 512,
-            height: 512,
-            steps: 20,
-          }),
-        });
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`Generation failed: ${response.status} - ${errorText}`);
-        }
-        return await response.json();
-      } catch (fetchError) {
+        const response = await realAPIClient.generateImage({ prompt, style: model });
+        return {
+          id: response.id,
+          result_url: response.url,
+          model: model as any,
+          task: "text2img",
+          status: "completed",
+          created_at: new Date(response.timestamp).toISOString(),
+        } as any;
+      } catch (apiError) {
         // Fallback to mock service if backend is unavailable
-        console.log("Backend unavailable, using mock image generation");
+        console.log("Real API unavailable, using mock image generation:", apiError);
         await simulateDelay(1500);
         return getMockGenerationResult(prompt, model);
       }
@@ -236,25 +229,17 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
 
     try {
       // Call AI backend
-      const apiUrl = process.env.EXPO_PUBLIC_API_URL || "http://127.0.0.1:3000";
-      let data;
+      let assistantResponse: string;
       try {
-        const response = await fetch(`${apiUrl}/api/chat`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: content }),
-        });
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`API error: ${response.status} - ${errorText}`);
-        }
-        data = await response.json();
-      } catch (fetchError) {
+        const response = await realAPIClient.chat([
+          { role: "user" as const, content },
+        ]);
+        assistantResponse = response.message;
+      } catch (apiError) {
         // Fallback to mock service if backend is unavailable
-        console.log("Backend unavailable, using mock AI response");
+        console.log("Real API unavailable, using mock AI response:", apiError);
         await simulateDelay(800);
-        data = { response: getMockAIResponse(content) };
+        assistantResponse = getMockAIResponse(content);
       }
 
       // Update typing message with actual response
@@ -263,7 +248,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         payload: {
           chatId: state.currentChatId,
           messageId: typingMessage.id,
-          content: data.response || "Sorry, I couldn't process that.",
+          content: assistantResponse || "Sorry, I couldn't process that.",
         },
       });
 
