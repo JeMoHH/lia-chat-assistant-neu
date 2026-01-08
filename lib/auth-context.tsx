@@ -99,12 +99,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       let token: string | null = null;
 
-      // Try to get token from secure storage
+      // Try to get token from storage (AsyncStorage for better compatibility)
       try {
-        token = await SecureStore.getItemAsync("auth_token");
-      } catch {
-        // Fallback to AsyncStorage
         token = await AsyncStorage.getItem("auth_token");
+      } catch (error) {
+        console.error("Failed to get auth token:", error);
       }
 
       if (!token) {
@@ -143,12 +142,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (response.success && response.data) {
         const { token, user } = response.data;
 
-        // Store token securely
+        // Store token in AsyncStorage
         try {
-          await SecureStore.setItemAsync("auth_token", token);
-        } catch {
-          // Fallback to AsyncStorage
           await AsyncStorage.setItem("auth_token", token);
+        } catch (error) {
+          console.error("Failed to store auth token:", error);
         }
 
         apiClient.setToken(token);
@@ -180,12 +178,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (response.success && response.data) {
         const { token, user } = response.data;
 
-        // Store token securely
+        // Store token in AsyncStorage
         try {
-          await SecureStore.setItemAsync("auth_token", token);
-        } catch {
-          // Fallback to AsyncStorage
           await AsyncStorage.setItem("auth_token", token);
+        } catch (error) {
+          console.error("Failed to store auth token:", error);
         }
 
         apiClient.setToken(token);
@@ -216,11 +213,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // Clear stored token
       try {
-        await SecureStore.deleteItemAsync("auth_token");
-      } catch {
-        // Ignore
+        await AsyncStorage.removeItem("auth_token");
+      } catch (error) {
+        console.error("Failed to clear auth token:", error);
       }
-      await AsyncStorage.removeItem("auth_token");
 
       apiClient.clearToken();
 
