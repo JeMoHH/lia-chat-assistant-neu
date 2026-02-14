@@ -1,0 +1,1 @@
+// Content for make-gif.mjs
