@@ -28,6 +28,7 @@ import { AuthProvider } from "@/lib/auth-context";
 import { initializeAndroidCompat } from "@/lib/android-init";
 import { memoryOptimizer } from "@/lib/memory-optimizer";
 import { apkCrashFixer } from "@/lib/apk-crash-fix";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 
 const DEFAULT_WEB_INSETS: EdgeInsets = { top: 0, right: 0, bottom: 0, left: 0 };
 const DEFAULT_WEB_FRAME: Rect = { x: 0, y: 0, width: 0, height: 0 };
@@ -116,6 +117,7 @@ export default function RootLayout() {
             <Stack.Screen name="oauth/callback" />
           </Stack>
           <StatusBar style="auto" />
+          {Platform.OS === "web" && <SpeedInsights />}
                   </GenerationProvider>
                 </ChatProvider>
               </FavoritesProvider>
